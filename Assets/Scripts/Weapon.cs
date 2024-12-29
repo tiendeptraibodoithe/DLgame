@@ -24,7 +24,7 @@ public class Weapon : MonoBehaviour
 
     bool canShoot = true;
     bool isReloading = false;
-
+ 
     void Update()
     {
         // Thêm debug log để kiểm tra

@@ -1,9 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Ammo : MonoBehaviour
+
 {
+    public Text totalBullet;
+    public Text currentBullet;
     [SerializeField] private AmmoSlot[] ammoSlots;
 
     [System.Serializable]
@@ -24,6 +28,8 @@ public class Ammo : MonoBehaviour
     public int GetMaxAmmo(AmmoType ammoType)
     {
         AmmoSlot slot = GetAmmoSlot(ammoType);
+
+        totalBullet.text = slot.maxAmmo.ToString();
         return slot != null ? slot.maxAmmo : 0;
     }
 
@@ -36,9 +42,11 @@ public class Ammo : MonoBehaviour
     public void ReduceCurrentAmmo(AmmoType ammoType)
     {
         AmmoSlot slot = GetAmmoSlot(ammoType);
+      
         if (slot != null)
         {
             slot.ammoAmount--;
+            currentBullet.text = slot.ammoAmount.ToString();
         }
     }
 
