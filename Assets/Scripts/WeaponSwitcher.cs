@@ -6,12 +6,24 @@ using UnityEngine;
 public class WeaponSwitcher : MonoBehaviour
 {
     [SerializeField] public int currentWeapon = 0;
-
-    public event Action<int> OnWeaponChanged; // Sự kiện thông báo vũ khí đã thay đổi
+    public event Action<int> OnWeaponChanged;
+    private Weapon[] weapons;
+    private Ammo ammoManager;
 
     void Start()
     {
+        // Lấy các components
+        weapons = new Weapon[transform.childCount];
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            weapons[i] = transform.GetChild(i).GetComponent<Weapon>();
+        }
+
+        // Lấy reference đến Ammo component
+        ammoManager = GetComponentInParent<Ammo>();
+
         SetWeaponActive();
+        UpdateAmmoDisplay(); // Cập nhật UI ban đầu
     }
 
     private void SetWeaponActive()
@@ -21,41 +33,36 @@ public class WeaponSwitcher : MonoBehaviour
         {
             bool isActive = weaponIndex == currentWeapon;
             weapon.gameObject.SetActive(isActive);
-
             weaponIndex++;
+        }
+        UpdateAmmoDisplay();
+    }
+
+    private void UpdateAmmoDisplay()
+    {
+        if (weapons != null && weapons[currentWeapon] != null)
+        {
+            var currentWeaponComponent = weapons[currentWeapon];
+            ammoManager.UpdateAmmoUI(currentWeaponComponent.AmmoType);  // Sử dụng property AmmoType
         }
     }
 
     void Update()
     {
         int previousWeapon = currentWeapon;
-
         ProcessKeyInput();
-
         if (previousWeapon != currentWeapon)
         {
             SetWeaponActive();
-            OnWeaponChanged?.Invoke(currentWeapon); // Gọi sự kiện khi đổi vũ khí
+            OnWeaponChanged?.Invoke(currentWeapon);
         }
     }
 
     private void ProcessKeyInput()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            currentWeapon = 0;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            currentWeapon = 1;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            currentWeapon = 2;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            currentWeapon = 3;
-        }
+        if (Input.GetKeyDown(KeyCode.Alpha1)) currentWeapon = 0;
+        if (Input.GetKeyDown(KeyCode.Alpha2)) currentWeapon = 1;
+        if (Input.GetKeyDown(KeyCode.Alpha3)) currentWeapon = 2;
+        if (Input.GetKeyDown(KeyCode.Alpha4)) currentWeapon = 3;
     }
 }

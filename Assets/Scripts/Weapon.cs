@@ -9,7 +9,8 @@ public class Weapon : MonoBehaviour
     [SerializeField] ParticleSystem muzzleFlash;
     [SerializeField] GameObject hitEffect;
     [SerializeField] Ammo ammoSlot;
-    [SerializeField] AmmoType ammoType;
+    [SerializeField] private AmmoType ammoType;  // Giữ SerializeField để có thể set trong Inspector
+    public AmmoType AmmoType => ammoType;
     [SerializeField] float timeBetweenShots;
     [SerializeField] int pellets = 10;
     [SerializeField] float spreadAngle = 5f;
@@ -76,6 +77,7 @@ public class Weapon : MonoBehaviour
         yield return new WaitForSeconds(reloadTime);
 
         ammoSlot.ReloadAmmo(ammoType);
+        //ammoSlot.UpdateAmmoUI(ammoType);
 
         isReloading = false;
         Debug.Log($"Reload complete for {gameObject.name}! Current Ammo: {ammoSlot.GetCurrentAmmo(ammoType)}");
@@ -91,6 +93,7 @@ public class Weapon : MonoBehaviour
             ProcessRaycast();
             recoil.RecoilFire(weaponType);
             ammoSlot.ReduceCurrentAmmo(ammoType);
+           // ammoSlot.UpdateAmmoUI(ammoType);
 
             // Thêm debug log sau khi bắn
             Debug.Log($"{gameObject.name} - Ammo remaining: {ammoSlot.GetCurrentAmmo(ammoType)}");

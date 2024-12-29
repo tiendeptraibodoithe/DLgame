@@ -1,13 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class Ammo : MonoBehaviour
-
 {
-    public Text totalBullet;
-    public Text currentBullet;
+    public Text totalBullet;  // Hiển thị đạn dự trữ
+    public Text currentBullet; // Hiển thị đạn hiện tại
     [SerializeField] private AmmoSlot[] ammoSlots;
 
     [System.Serializable]
@@ -19,6 +16,21 @@ public class Ammo : MonoBehaviour
         public int reserveAmmo = 90; // Đạn dự trữ
     }
 
+    private void UpdateUI(AmmoSlot slot)
+    {
+        if (slot != null && currentBullet != null && totalBullet != null)
+        {
+            currentBullet.text = slot.ammoAmount.ToString();
+            totalBullet.text = slot.reserveAmmo.ToString();
+        }
+    }
+
+    public void UpdateAmmoUI(AmmoType ammoType)
+    {
+        AmmoSlot slot = GetAmmoSlot(ammoType);
+        UpdateUI(slot);
+    }
+
     public int GetCurrentAmmo(AmmoType ammoType)
     {
         AmmoSlot slot = GetAmmoSlot(ammoType);
@@ -28,8 +40,6 @@ public class Ammo : MonoBehaviour
     public int GetMaxAmmo(AmmoType ammoType)
     {
         AmmoSlot slot = GetAmmoSlot(ammoType);
-
-        totalBullet.text = slot.maxAmmo.ToString();
         return slot != null ? slot.maxAmmo : 0;
     }
 
@@ -42,27 +52,11 @@ public class Ammo : MonoBehaviour
     public void ReduceCurrentAmmo(AmmoType ammoType)
     {
         AmmoSlot slot = GetAmmoSlot(ammoType);
-      
         if (slot != null)
         {
             slot.ammoAmount--;
-            currentBullet.text = slot.ammoAmount.ToString();
+            UpdateUI(slot);
         }
-    }
-
-    public bool NeedsReload(AmmoType ammoType)
-    {
-        AmmoSlot slot = GetAmmoSlot(ammoType);
-        if (slot == null) return false;
-
-        // Cần nạp đạn khi: đạn trong băng chưa đầy VÀ còn đạn dự trữ
-        return slot.ammoAmount < slot.maxAmmo && slot.reserveAmmo > 0;
-    }
-
-    public bool HasAmmoToReload(AmmoType ammoType)
-    {
-        AmmoSlot slot = GetAmmoSlot(ammoType);
-        return slot != null && slot.reserveAmmo > 0;
     }
 
     public void ReloadAmmo(AmmoType ammoType)
@@ -70,16 +64,25 @@ public class Ammo : MonoBehaviour
         AmmoSlot slot = GetAmmoSlot(ammoType);
         if (slot != null && slot.reserveAmmo > 0)
         {
-            // Tính số đạn cần để nạp đầy băng
             int ammoNeeded = slot.maxAmmo - slot.ammoAmount;
-
-            // Kiểm tra xem có đủ đạn dự trữ không
             int ammoToAdd = Mathf.Min(ammoNeeded, slot.reserveAmmo);
-
-            // Nạp đạn và trừ đạn dự trữ
             slot.ammoAmount += ammoToAdd;
             slot.reserveAmmo -= ammoToAdd;
+            UpdateUI(slot);
         }
+    }
+
+    public bool NeedsReload(AmmoType ammoType)
+    {
+        AmmoSlot slot = GetAmmoSlot(ammoType);
+        if (slot == null) return false;
+        return slot.ammoAmount < slot.maxAmmo && slot.reserveAmmo > 0;
+    }
+
+    public bool HasAmmoToReload(AmmoType ammoType)
+    {
+        AmmoSlot slot = GetAmmoSlot(ammoType);
+        return slot != null && slot.reserveAmmo > 0;
     }
 
     private AmmoSlot GetAmmoSlot(AmmoType ammoType)
