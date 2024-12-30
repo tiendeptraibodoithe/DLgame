@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public class VaccineCollectionSystem : MonoBehaviour
 {
     [Header("Vaccine Mission")]
     [SerializeField] private int requiredVaccines = 3;
     private int collectedVaccines = 0;
+    private HashSet<int> collectedVaccineIds = new HashSet<int>();
 
     [Header("Zombie Mission")]
     [SerializeField] private int requiredZombieKills = 3;
@@ -22,6 +24,9 @@ public class VaccineCollectionSystem : MonoBehaviour
     [Header("Player Settings")]
     [SerializeField] private MonoBehaviour playerController;
     [SerializeField] private MonoBehaviour playerCamera; // Reference to player camera controller if you have one
+
+    [SerializeField] private PlayerHealth playerHealth;
+    public Ammo ammo;
 
     private bool isMissionComplete = false;
 
@@ -64,7 +69,7 @@ public class VaccineCollectionSystem : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.F))
             {
-                CheckForVaccinePickup();
+                CheckForItemPickup();
             }
         }
 
@@ -75,29 +80,63 @@ public class VaccineCollectionSystem : MonoBehaviour
         }
     }
 
-    private void CheckForVaccinePickup()
+    private void CheckForItemPickup()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 2f);
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 5f); // Tăng phạm vi nếu cần
+        Debug.Log($"Số vật phẩm trong phạm vi: {hitColliders.Length}");
         foreach (var hitCollider in hitColliders)
         {
+            Debug.Log($"Phát hiện object: {hitCollider.name}, Tag: {hitCollider.tag}");
+
             if (hitCollider.CompareTag("Vaccine"))
             {
-                CollectVaccine(hitCollider.gameObject);
-                break;
+                // Kiểm tra ID của vaccine
+                int vaccineId = hitCollider.gameObject.GetInstanceID();
+                if (!collectedVaccineIds.Contains(vaccineId))
+                {
+                    CollectVaccine(hitCollider.gameObject);
+                    collectedVaccineIds.Add(vaccineId);
+                    Debug.Log($"Collected vaccine ID: {vaccineId}, Total collected: {collectedVaccines}");
+                }
+                else
+                {
+                    Debug.Log($"Vaccine ID: {vaccineId} đã được thu thập trước đó");
+                }
+            }
+            else if (hitCollider.CompareTag("FirstAid"))
+            {
+                FirstAidPickup firstAid = hitCollider.GetComponent<FirstAidPickup>();
+                if (firstAid != null)
+                {
+                    firstAid.Collect(playerHealth);
+                }
+            }
+            else if (hitCollider.CompareTag("AmmoBox")) // Kiểm tra tag AmmoBox
+            {
+                AmmoBox ammoBox = hitCollider.GetComponent<AmmoBox>();
+                if (ammoBox != null) // Kiểm tra ammoBox không phải null
+                {
+                    ammoBox.Collect(); // Gọi phương thức Collect của AmmoBox mà không truyền tham số
+                }
+                else
+                {
+                    Debug.LogWarning("AmmoBox is null!"); // Thông báo nếu ammoBox là null
+                }
             }
         }
     }
 
     private void CollectVaccine(GameObject vaccineObject)
     {
-        collectedVaccines++;
-        UpdateVaccineUI();
-
         VaccineBeacon beacon = vaccineObject.GetComponent<VaccineBeacon>();
         if (beacon != null)
         {
             beacon.DeactivateBeacon();
         }
+
+        collectedVaccines++;
+        UpdateVaccineUI();
+        Debug.Log($"Collected vaccine. Total: {collectedVaccines}");
 
         Destroy(vaccineObject);
         CheckMissionCompletion();
@@ -155,7 +194,12 @@ public class VaccineCollectionSystem : MonoBehaviour
 
         Debug.Log("Mission Complete - TimeScale set to 0");
     }
-
+    private void ResetVaccineCollection()
+    {
+        collectedVaccines = 0;
+        collectedVaccineIds.Clear();
+        UpdateVaccineUI();
+    }
     private void LoadNextLevel()
     {
         ResetGameState();
@@ -181,18 +225,11 @@ public class VaccineCollectionSystem : MonoBehaviour
 
     private void ResetGameState()
     {
-        // Reset time
         Time.timeScale = 1f;
-
-        // Reset mission state
         isMissionComplete = false;
-
-        // Hide cursor
         SetCursorState(false);
-
-        // Enable player controls
         EnablePlayerControls();
-
+        ResetVaccineCollection(); // Thêm reset vaccine collection
         Debug.Log($"Game state reset - TimeScale: {Time.timeScale}");
     }
 

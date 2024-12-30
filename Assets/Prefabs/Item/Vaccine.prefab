@@ -75,8 +75,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   beaconLight: {fileID: 0}
   beaconHeight: 10
-  beaconColor: {r: 0, g: 1, b: 0, a: 0.09803922}
+  beaconColor: {r: 0, g: 0.6642184, b: 1, a: 0.09803922}
   rotateSpeed: 50
+  beaconRadius: 0.5
   delayBeforeBeacon: 20
 --- !u!1 &7004906734922207680
 GameObject:

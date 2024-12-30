@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,5 +20,12 @@ public class PlayerHealth : MonoBehaviour
         {
             GetComponent<DeathHandler>().HandleDeath();
         }
+    }
+    public void Heal(float amount)
+    {
+        playerHitPoints += amount;
+        if (playerHitPoints > 100f) playerHitPoints = 100f; // Giới hạn máu tối đa
+        currentHealth = playerHitPoints;
+        healthBar.setHealthy(currentHealth);
     }
 }

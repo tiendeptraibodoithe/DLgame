@@ -6,6 +6,8 @@ TagManager:
   tags:
   - CinemachineTarget
   - Vaccine
+  - FirstAid
+  - AmmoBox
   layers:
   - Default
   - TransparentFX

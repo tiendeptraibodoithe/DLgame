@@ -7,6 +7,7 @@ public class VaccineBeacon : MonoBehaviour
     [SerializeField] private float beaconHeight = 10f;
     [SerializeField] private Color beaconColor = new Color(0f, 1f, 0f, 0.5f); // Màu xanh lá semi-transparent
     [SerializeField] private float rotateSpeed = 50f;
+    [SerializeField] private float beaconRadius = 2f;
 
     [Header("Timing")]
     [SerializeField] private float delayBeforeBeacon = 120f; // 2 phút trước khi hiện cột sáng
@@ -29,8 +30,8 @@ public class VaccineBeacon : MonoBehaviour
         beaconLight.transform.parent = transform;
 
         // Định vị cột sáng
-        beaconLight.transform.localPosition = new Vector3(0, beaconHeight / 2f, 0);
-        beaconLight.transform.localScale = new Vector3(0.5f, beaconHeight / 2f, 0.5f);
+        beaconLight.transform.localPosition = new Vector3(0, 0, 0);
+        beaconLight.transform.localScale = new Vector3(beaconRadius, beaconHeight / 2f, beaconRadius);
 
         // Tạo material phát sáng cho cột sáng
         Material beaconMaterial = new Material(Shader.Find("Standard"));

@@ -6,6 +6,14 @@ public class Ammo : MonoBehaviour
     public Text totalBullet;  // Hiển thị đạn dự trữ
     public Text currentBullet; // Hiển thị đạn hiện tại
     [SerializeField] private AmmoSlot[] ammoSlots;
+    private AmmoType currentActiveAmmoType;
+
+    public void SetCurrentAmmoType(AmmoType type)
+    {
+        currentActiveAmmoType = type;
+        UpdateAmmoUI(type); // Cập nhật UI ngay khi đổi loại đạn
+    }
+
 
     [System.Serializable]
     private class AmmoSlot
@@ -28,7 +36,11 @@ public class Ammo : MonoBehaviour
     public void UpdateAmmoUI(AmmoType ammoType)
     {
         AmmoSlot slot = GetAmmoSlot(ammoType);
-        UpdateUI(slot);
+        if (slot != null)
+        {
+            currentActiveAmmoType = ammoType; // Cập nhật loại đạn active
+            UpdateUI(slot);
+        }
     }
 
     public int GetCurrentAmmo(AmmoType ammoType)
@@ -68,6 +80,7 @@ public class Ammo : MonoBehaviour
             int ammoToAdd = Mathf.Min(ammoNeeded, slot.reserveAmmo);
             slot.ammoAmount += ammoToAdd;
             slot.reserveAmmo -= ammoToAdd;
+            Debug.Log($"Reloaded {ammoToAdd} ammo. Remaining reserve: {slot.reserveAmmo}");
             UpdateUI(slot);
         }
     }
@@ -93,4 +106,52 @@ public class Ammo : MonoBehaviour
         }
         return null;
     }
+    public void AddAmmoToAllTypes(int baseAmount)
+    {
+        foreach (AmmoSlot slot in ammoSlots)
+        {
+            int additionalAmmo = CalculateAmmoAmount(slot.type, baseAmount);
+            int previousReserveAmmo = slot.reserveAmmo;
+            slot.reserveAmmo = Mathf.Min(slot.reserveAmmo + additionalAmmo, slot.maxAmmo * 3);
+
+            Debug.Log($"Added {additionalAmmo} ammo to {slot.type}. " +
+                     $"Previous reserve: {previousReserveAmmo}, New reserve: {slot.reserveAmmo}");
+        }
+
+        // Cập nhật UI cho loại đạn đang active sau khi thêm đạn
+        UpdateAmmoUI(currentActiveAmmoType);
+    }
+
+    // Phương thức mới để tính toán số đạn được thêm cho mỗi loại súng
+    private int CalculateAmmoAmount(AmmoType ammoType, int baseAmount)
+    {
+        // Hệ số nhân cho mỗi loại súng
+        float multiplier = 1.0f;
+
+        switch (ammoType)
+        {
+            case AmmoType.Pistol:
+                multiplier = 0.4f;  // 40% của baseAmount
+                break;
+            case AmmoType.Rifle:
+                multiplier = 0.8f;  // 80% của baseAmount
+                break;
+            case AmmoType.Shotgun:
+                multiplier = 0.3f;  // 30% của baseAmount
+                break;
+            case AmmoType.Sniper:
+                multiplier = 0.2f;  // 20% của baseAmount
+                break;
+        }
+
+        return Mathf.RoundToInt(baseAmount * multiplier);
+    }
+
+    // Có thể xóa hoặc đánh dấu Obsolete phương thức AddAmmo cũ
+    [System.Obsolete("Use AddAmmoToAllTypes instead")]
+    public void AddAmmo(AmmoType ammoType, int amount)
+    {
+        AddAmmoToAllTypes(amount);
+    }
+
 }

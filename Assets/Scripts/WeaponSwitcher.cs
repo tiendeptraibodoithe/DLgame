@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class WeaponSwitcher : MonoBehaviour
@@ -22,8 +20,14 @@ public class WeaponSwitcher : MonoBehaviour
         // Lấy reference đến Ammo component
         ammoManager = GetComponentInParent<Ammo>();
 
+        // Set vũ khí ban đầu và cập nhật UI
         SetWeaponActive();
-        UpdateAmmoDisplay(); // Cập nhật UI ban đầu
+
+        // Set loại đạn hiện tại cho Ammo system
+        if (weapons != null && weapons[currentWeapon] != null)
+        {
+            ammoManager.SetCurrentAmmoType(weapons[currentWeapon].AmmoType);
+        }
     }
 
     private void SetWeaponActive()
@@ -43,7 +47,8 @@ public class WeaponSwitcher : MonoBehaviour
         if (weapons != null && weapons[currentWeapon] != null)
         {
             var currentWeaponComponent = weapons[currentWeapon];
-            ammoManager.UpdateAmmoUI(currentWeaponComponent.AmmoType);  // Sử dụng property AmmoType
+            // Set loại đạn hiện tại và cập nhật UI
+            ammoManager.SetCurrentAmmoType(currentWeaponComponent.AmmoType);
         }
     }
 
@@ -51,6 +56,7 @@ public class WeaponSwitcher : MonoBehaviour
     {
         int previousWeapon = currentWeapon;
         ProcessKeyInput();
+
         if (previousWeapon != currentWeapon)
         {
             SetWeaponActive();
@@ -64,5 +70,8 @@ public class WeaponSwitcher : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha2)) currentWeapon = 1;
         if (Input.GetKeyDown(KeyCode.Alpha3)) currentWeapon = 2;
         if (Input.GetKeyDown(KeyCode.Alpha4)) currentWeapon = 3;
+
+        // Giới hạn currentWeapon trong phạm vi hợp lệ
+        currentWeapon = Mathf.Clamp(currentWeapon, 0, weapons.Length - 1);
     }
 }
